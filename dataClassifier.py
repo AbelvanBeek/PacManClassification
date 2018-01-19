@@ -78,10 +78,13 @@ def enhancedFeatureExtractorDigit(datum):
     features =  basicFeatureExtractorDigit(datum)
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    for x in range(1, DIGIT_DATUM_WIDTH - 1):
+        for y in range(1, DIGIT_DATUM_HEIGHT- 1):
+            features[(x,y)] = max(#datum.getPixel(x + 1, y + 1), datum.getPixel(x, y + 1), datum.getPixel(x - 1, y + 1),
+                                  datum.getPixel(x + 1, y),     datum.getPixel(x, y),     datum.getPixel(x - 1, y))
+                                  #datum.getPixel(x + 1, y - 1), datum.getPixel(x, y - 1), datum.getPixel(x - 1, y - 1))
 
-    return features
-
+    return features    
 
 
 def basicFeatureExtractorPacman(state):
