@@ -116,7 +116,7 @@ def enhancedFeatureExtractorDigit(datum):
     blackcount = roundup(blackcount)
     features["whitecount"] = whitecount
     features["blackcount"] = blackcount
-    features["upperbottomratio"] = upperhalf/bottomhalf
+    features["upperbottomratio"] = round(upperhalf/bottomhalf)
 
     return features
 
