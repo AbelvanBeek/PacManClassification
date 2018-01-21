@@ -61,7 +61,53 @@ class MiraClassifier:
         representing a vector of values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        weightsCopy = {}
+        Cresults= []
+        Datalabels = zip(trainingData, trainingLabels)
+        for cUpperBound in Cgrid:
+
+            # Reset the weights
+            self.weights = dict((label, util.Counter()) for label in self.legalLabels)
+            for i in range(self.max_iterations):
+                print "Iteration ", i, "using C= ", cUpperBound
+                for features, label in Datalabels:
+                    ourGuess = self.classify([features])[0]
+                    if label != ourGuess:
+                        # if we didn't classify correctly
+                        # do the weird calculation
+                        T = ((self.weights[ourGuess] - self.weights[label]) * features + 1.) / (2 * (features * features))
+                        # make sure we arent higher than C
+                        TorC = min(cUpperBound, T)
+                        RF = features.copy()
+                        for key, value in RF.items():
+                            RF[key] = value * T
+                        self.weights[label] += RF
+                        self.weights[ourGuess] -= RF
+
+            weightsCopy[cUpperBound] = self.weights
+            result = 0
+            for label in validationLabels:
+                if label == ourGuess:
+                    result += 1
+            Cresults.append(result)
+
+        # Get the best C value
+        bestC = self.getmax(Cgrid, Cresults)
+        print "Used C-value:", bestC
+        self.weights = weightsCopy[bestC]
+        self.C = bestC
+        return bestC
+
+    def getmax(self, Cgrid, Cresults):
+        maxC = Cgrid[0]
+        maxScore = 0
+
+        for c, cscore in zip(Cgrid, Cresults):
+            if (cscore >= maxScore):
+                maxScore = Cresults
+                maxC = c
+
+        return maxC
 
     def classify(self, data ):
         """
@@ -77,5 +123,17 @@ class MiraClassifier:
                 vectors[l] = self.weights[l] * datum
             guesses.append(vectors.argMax())
         return guesses
+
+    def findHighWeightFeatures(self, label):
+        """
+        Returns a list of the 100 features with the greatest weight for some label
+        """
+        featuresWeights = []
+
+        "*** YOUR CODE HERE ***"
+        weights = self.weights[label]
+        featuresWeights = sorted(weights, key=weights.get, reverse=True)[:100]
+
+        return featuresWeights
 
 

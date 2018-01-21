@@ -23,6 +23,7 @@ import mira
 import samples
 import sys
 import util
+import math
 from pacman import GameState
 
 TEST_SET_SIZE = 100
@@ -64,6 +65,9 @@ def basicFeatureExtractorFace(datum):
                 features[(x,y)] = 0
     return features
 
+def roundup(x):
+    return int(math.ceil(x / 100.0)) * 100
+
 def enhancedFeatureExtractorDigit(datum):
     """
     Your feature extraction playground.
@@ -72,19 +76,49 @@ def enhancedFeatureExtractorDigit(datum):
     for this datum (datum is of type samples.Datum).
 
     ## DESCRIBE YOUR ENHANCED FEATURES HERE...
-
+        Detect horizontal and vertical edges
+        Set/unset pixels count
+        Upper/bottomhalf set pixel ratio
     ##
     """
     features =  basicFeatureExtractorDigit(datum)
-
+    
     "*** YOUR CODE HERE ***"
+    whitecount = 0
+    blackcount = 0
+    upperhalf = 0
+    bottomhalf = 0
+
     for x in range(1, DIGIT_DATUM_WIDTH - 1):
         for y in range(1, DIGIT_DATUM_HEIGHT- 1):
-            features[(x,y)] = max(#datum.getPixel(x + 1, y + 1), datum.getPixel(x, y + 1), datum.getPixel(x - 1, y + 1),
-                                  datum.getPixel(x + 1, y),     datum.getPixel(x, y),     datum.getPixel(x - 1, y))
-                                  #datum.getPixel(x + 1, y - 1), datum.getPixel(x, y - 1), datum.getPixel(x - 1, y - 1))
 
-    return features    
+            if (datum.getPixel(x + 1, y) != datum.getPixel(x - 1, y)):
+                features[(x,y, "hor")] = 1
+            else :
+                features[(x,y, "hor")] = 0
+            
+            if (datum.getPixel(x, y + 1) != datum.getPixel(x, y - 1)):
+                features[(x,y, "ver")] = 1
+            else:
+                features[(x,y, "ver")] = 0
+
+            if datum.getPixel(x, y) == 1:
+                whitecount = whitecount + 1
+            else:
+                blackcount = blackcount + 1
+            
+            if y > DIGIT_DATUM_HEIGHT/2:
+                upperhalf = upperhalf + 1
+            else:
+                bottomhalf = bottomhalf + 1
+
+    whitecount = roundup(whitecount)
+    blackcount = roundup(blackcount)
+    features["whitecount"] = whitecount
+    features["blackcount"] = blackcount
+    features["upperbottomratio"] = round(upperhalf/bottomhalf)
+
+    return features
 
 
 def basicFeatureExtractorPacman(state):
