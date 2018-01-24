@@ -159,11 +159,52 @@ def enhancedPacmanFeatures(state, action):
     For each state, this function is called with each legal action.
     It should return a counter with { <feature name> : <feature value>, ... }
     """
+    
     features = util.Counter()
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    return features
+    
+    state = state.generatePacmanSuccessor(action)
 
+    features["AmountOfFoodLeft"] = 1.0 / state.getNumFood() if state.getNumFood() > 0 else 1 
+    
+    position = state.getPacmanPosition()
+    allFood = state.getFood()
+    # max distance would be max manhattan distance: width + height, we can use the food grid for this
+    gridWidth, gridHeight = allFood.width, allFood.height
+    maxDist = gridWidth + gridHeight
+    closestfood = maxDist
+    for food in allFood.asList():
+        dist = util.manhattanDistance(position, food)
+        if dist < closestfood:
+            closestfood = dist
+    features["ClosestFoodDistance"] = 1.0/closestfood
+
+    closestEvilGhost = maxDist
+    closestScaredghost = maxDist
+    allGhosts = state.getGhostStates()
+    scared = False;
+    for ghost in allGhosts:
+        dist = util.manhattanDistance(position, ghost.getPosition())
+        if ghost.scaredTimer > 0:
+            scared = True
+            if dist < closestScaredghost:
+                closestScaredghost = dist
+        else:
+            if dist < closestEvilGhost:
+                closestEvilGhost = dist;
+    features["ClosestGhostDistance"]  = 1.0/closestEvilGhost if closestEvilGhost > 0 else 1
+    features["ClosestScaredDistance"] = 1.0/closestScaredghost if closestScaredghost > 0 else 1
+
+    actions = len(state.getLegalActions())
+    features["LegalActions"] = 1.0 / actions if actions > 0 else 1
+    
+    """
+    if scared:
+        features["GhostsAreScared"] = 1
+    else:
+        features["GhostsAreScared"] = 0
+    """
+    
+    return features
 
 def contestFeatureExtractorDigit(datum):
     """
